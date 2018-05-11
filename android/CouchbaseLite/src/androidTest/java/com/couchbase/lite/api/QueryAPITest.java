@@ -428,7 +428,7 @@ public class QueryAPITest extends BaseTest {
         }
         // For Documentation
         {
-        		// # tag::query-collection-operator[]
+        		// # tag::query-collection-operator-contains[]
             Query query = QueryBuilder
                     .select(SelectResult.expression(Meta.id),
                             SelectResult.property("name"),
@@ -439,9 +439,47 @@ public class QueryAPITest extends BaseTest {
             ResultSet rs = query.execute();
             for (Result result : rs)
                 Log.i("Sample", String.format("public_likes -> %s", result.getArray("public_likes").toList()));
-            // # end::query-collection-operator[]
+            // # end::query-collection-operator-contains[]
         }
     }
+
+		// IN operator
+		@Test
+		public void testInOperator() throws CouchbaseLiteException {
+				// For Validation
+				{
+						Query query = QueryBuilder.select(SelectResult.property("name"))
+										.from(DataSource.database(database))
+										.where(Expression.property("country").in(Expression.string("Latvia"), Expression.string("usa"))
+														.and(Expression.property("type").equalTo(Expression.string("airport"))))
+										.orderBy(Ordering.property("name"));
+						assertNotNull(query);
+						ResultSet rs = query.execute();
+						assertNotNull(rs);
+						int count = 0;
+						for (Result result : rs) {
+								if (count == 0) assertEquals("RIX", result.getString("name"));
+								if (count == 1) assertEquals("SFO", result.getString("name"));
+								if (count == 2) assertEquals("SJC", result.getString("name"));
+								count++;
+						}
+						assertEquals(3, count);
+				}
+
+				// For Documentation
+				{
+						// # tag::query-collection-operator-in[]
+						Query query = QueryBuilder.select(SelectResult.property("name"))
+										.from(DataSource.database(database))
+										.where(Expression.property("country").in(Expression.string("Latvia"), Expression.string("usa"))
+														.and(Expression.property("type").equalTo(Expression.string("airport"))))
+										.orderBy(Ordering.property("name"));
+						ResultSet rs = query.execute();
+						for (Result result : rs)
+								Log.w("Sample", String.format("%s", result.toMap().toString()));
+						// # end::query-collection-operator-in[]
+				}
+		}
 
     // Pattern Matching
     @Test
@@ -787,39 +825,4 @@ public class QueryAPITest extends BaseTest {
         }
     }
 
-    // IN operator
-    @Test
-    public void testInOperator() throws CouchbaseLiteException {
-        // For Validation
-        {
-            Query query = QueryBuilder.select(SelectResult.property("name"))
-                    .from(DataSource.database(database))
-                    .where(Expression.property("country").in(Expression.string("Latvia"), Expression.string("usa"))
-                            .and(Expression.property("type").equalTo(Expression.string("airport"))))
-                    .orderBy(Ordering.property("name"));
-            assertNotNull(query);
-            ResultSet rs = query.execute();
-            assertNotNull(rs);
-            int count = 0;
-            for (Result result : rs) {
-                if (count == 0) assertEquals("RIX", result.getString("name"));
-                if (count == 1) assertEquals("SFO", result.getString("name"));
-                if (count == 2) assertEquals("SJC", result.getString("name"));
-                count++;
-            }
-            assertEquals(3, count);
-        }
-
-        // For Documentation
-        {
-            Query query = QueryBuilder.select(SelectResult.property("name"))
-                    .from(DataSource.database(database))
-                    .where(Expression.property("country").in(Expression.string("Latvia"), Expression.string("usa"))
-                            .and(Expression.property("type").equalTo(Expression.string("airport"))))
-                    .orderBy(Ordering.property("name"));
-            ResultSet rs = query.execute();
-            for (Result result : rs)
-                Log.w("Sample", String.format("%s", result.toMap().toString()));
-        }
-    }
 }
