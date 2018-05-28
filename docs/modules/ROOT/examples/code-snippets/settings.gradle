@@ -1,0 +1,3 @@
+include ':app'
+include ':CouchbaseLite'
+project(':CouchbaseLite').projectDir = new File(settingsDir, '../../../../../android/CouchbaseLite')
